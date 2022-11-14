@@ -1,6 +1,7 @@
-# kubectl create -f test-ib.yml -n di --validate=false
-default: 
-  name: zzh-test
+# You can remove or add items in the default_cli_args permanently and then overwrite them by command line arguments,
+# but you should always keep the variable name `default_cli_args`, 'name' unchanged. 
+default_cli_args: 
+  name: zzh-k8s-cli-test
   u: zzh
   nnodes:  1
   ngpus:  '0'
@@ -9,70 +10,60 @@ default:
   image: registry.sensetime.com/xlab/ding:zym-vpt-dev-v2
   command: echo finished
 
-args:
+job_args:
 - |
-  echo "build prerequisite"
+  # apt install ...
   eval $command
 
 
 apiVersion: diengine.opendilab.org/v2alpha1
 kind: DIJob
 metadata:
-  name: ${default.name}
+  name: ${default_cli_args.name}
   labels:
-    u: ${default.u}
+    u: ${default_cli_args.u}
 spec:
   priority: normal
   backoffLimit: 0
   cleanPodPolicy: Running
   preemptible: false
   tasks:
-  - replicas: ${default.nnodes}
+  - replicas: ${default_cli_args.nnodes}
     type: none
     name: serial
     template:
       spec:
         containers:
         - name: di-container
-          image: ${default.image}
+          image: ${default_cli_args.image}
           imagePullPolicy: IfNotPresent
           env:
           - name: PYTHONUNBUFFERED
             value: '1'
           - name: ngpus
-            value: ${default.ngpus}
+            value: ${default_cli_args.ngpus}
           - name: ncpus
-            value: ${default.ncpus}
+            value: ${default_cli_args.ncpus}
           - name: memory
-            value: ${default.memory}
+            value: ${default_cli_args.memory}
           - name: command
-            value: ${default.command}
+            value: ${default_cli_args.command}
           resources:
             requests:
-              nvidia.com/gpu-a100: ${default.ngpus}
-              cpu: ${default.ncpus}
-              memory: ${default.memory}
+              nvidia.com/gpu-a100: ${default_cli_args.ngpus}
+              cpu: ${default_cli_args.ncpus}
+              memory: ${default_cli_args.memory}
             limits:
-              nvidia.com/gpu-a100: ${default.ngpus}
-              cpu: ${default.ncpus}
-              memory: ${default.memory}
+              nvidia.com/gpu-a100: ${default_cli_args.ngpus}
+              cpu: ${default_cli_args.ncpus}
+              memory: ${default_cli_args.memory}
           command: [/bin/bash, -c]
-          args: ${args}
+          args: ${job_args}
           volumeMounts:
           - name: cache-volume
             mountPath: /dev/shm
-          - name: nfs-volume
-            mountPath: /mnt/nfs/zhouzhanhui
-          - name: share-volume
-            mountPath: /mnt/nfs/share
         volumes:
         - name: cache-volume
           emptyDir:
             medium: Memory
             sizeLimit: 128Mi
-        - name: nfs-volume
-          hostPath:
-            path: /mnt/nfs/zhouzhanhui
-        - name: share-volume
-          hostPath:
-            path: /mnt/nfs/share
