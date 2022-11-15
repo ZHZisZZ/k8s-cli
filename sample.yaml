@@ -1,14 +1,17 @@
-# You can remove or add items in the default_cli_args permanently and then overwrite them by command line arguments,
-# but you should always keep the variable name `default_cli_args`, 'name' unchanged. 
+# You can remove or add items in the default_cli_args permanently and then overwrite them by command line arguments.
+# Note: `name`, `tolerations`, `affinity` are reserved variable names.
 default_cli_args: 
-  name: zzh-k8s-cli-test
-  u: zzh
+  name: user-k8s-cli-test
+  u: user
   nnodes:  1
   ngpus:  '0'
   ncpus:  '1'
   memory: 20Gi
   image: registry.sensetime.com/xlab/ding:zym-vpt-dev-v2
-  command: echo finished
+  tolerations:
+  affinity: []
+  command: |
+    echo "Overwrite default command here by '--command'"
 
 job_args:
 - |
@@ -33,6 +36,19 @@ spec:
     name: serial
     template:
       spec:
+        tolerations:
+        - key: "user"
+          operator: "Equal"
+          value: ${default_cli_args.tolerations}
+          effect: "NoSchedule"
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values: ${default_cli_args.affinity}
         containers:
         - name: di-container
           image: ${default_cli_args.image}

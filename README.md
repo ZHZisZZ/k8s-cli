@@ -16,15 +16,16 @@ pip install -e .
 1. overwrite parameters in `sample.yaml` from command line arguments and create an dijob
 ```
 $ krun -c sample.yaml
-dijob.diengine.opendilab.org/zzh-k8s-cli-test created
+dijob.diengine.opendilab.org/user-k8s-cli-test created
 
-# when name conflict, krun will automatically create an unique job name
+# when name conflicting, krun will automatically create an unique job name
 $ krun -c sample.yaml
-dijob.diengine.opendilab.org/zzh-k8s-cli-test-0 created
+dijob.diengine.opendilab.org/user-k8s-cli-test-0 created
 
-$ krun -c sample.yaml --name others-k8s-cli-test --ncpus 32 --ngpus 8
+$ krun -c sample.yaml --name others-k8s-cli-test --ncpus 12 --ngpus 1 --tolerations yc --affinity 199 200 201
 dijob.diengine.opendilab.org/others-k8s-cli-test created
 ```
+Note: if `affinity` and `tolerations` are not empty by default, you can set them to empty by `--affinity None`.
 
 2. grid search
 ```
@@ -40,9 +41,9 @@ done
 # kcancel
 ```
 $ kcancel -k k8s-cli-test
-delete dijob: zzh-k8s-cli-test? y
-dijob.diengine.opendilab.org "zzh-k8s-cli-test" deleted
-delete dijob: zzh-k8s-cli-test-0? y
-dijob.diengine.opendilab.org "zzh-k8s-cli-test-0" deleted
 delete dijob: others-k8s-cli-test? n
+delete dijob: user-k8s-cli-test? y
+dijob.diengine.opendilab.org "user-k8s-cli-test" deleted
+delete dijob: user-k8s-cli-test-0? y
+dijob.diengine.opendilab.org "user-k8s-cli-test-0" deleted
 ```

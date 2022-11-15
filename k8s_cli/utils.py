@@ -32,3 +32,11 @@ def create_unique_jobname(name: Text) -> Text:
             new_name = f'{name}-{i}'
             i += 1
         return new_name
+
+
+def str2none(func):
+    if func == type(None):
+        return str
+    def newfunc(value):
+        return None if value == 'None' else func(value)
+    return newfunc
